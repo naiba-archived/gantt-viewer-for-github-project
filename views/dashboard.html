@@ -1,0 +1,31 @@
+{{template "common/header" .}}
+<div class="container mx-auto max-w-4xl p-7">
+    {{range .Projects}}
+    <a class="card w-full bg-primary text-primary-content mb-4" href="{{.GetURL}}">
+        <div class="card-body">
+            <h2 class="card-title">{{.Title}} <span class="badge">@{{.Owner}}</span></h2>
+            <div class="flex gap-2">
+                <span>Column Setup Status:</span>
+                <span class="badge badge-md badge-{{if .StartField}}success{{else}}error{{end}} tooltip tooltip-warning"
+                    data-tip="Create a filed in your project, name: Start, data type: DATE">Start</span>
+
+                <span class="badge badge-md badge-{{if .EndField}}success{{else}}error{{end}} tooltip tooltip-warning"
+                    data-tip="Create a filed in your project, name: End, data type: DATE">End
+                </span>
+                <span
+                    class="badge badge-md badge-{{if .ProgressField}}success{{else}}error{{end}} tooltip tooltip-warning"
+                    data-tip="Create a filed in your project, name: Progress, data type: NUMBER">Progress
+                </span>
+                <span
+                    class="badge badge-md badge-{{if .DependenciesField}}success{{else}}error{{end}} tooltip tooltip-warning"
+                    data-tip="Name: Dependencies, data type: TEXT, value: issue id with name and owner like bitizenwallet/bitizen_wallet#1">Dependencies
+                </span>
+                {{if .IsActionRequired}}
+                <span><b>*Action Required</b></span>
+                {{end}}
+            </div>
+        </div>
+    </a>
+    {{end}}
+</div>
+{{template "common/footer" .}}

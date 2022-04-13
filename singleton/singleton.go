@@ -13,6 +13,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/naiba/gantt-viewer-for-github-project/model"
 	"github.com/patrickmn/go-cache"
 )
@@ -80,4 +81,12 @@ func setupOauth2() {
 func GetOauth2Config() *oauth2.Config {
 	oauth2init.Do(setupOauth2)
 	return oauth2config
+}
+
+func Map(data fiber.Map) fiber.Map {
+	data["Site"] = fiber.Map{
+		"Title": "Gantt Viewer for GitHub Project",
+		"Brand": "Gantt Viewer",
+	}
+	return data
 }

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Site.Title}}</title>
+    <link rel="stylesheet" href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/daisyui/2.2.2/full.css">
+    <link rel="stylesheet" href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/frappe-gantt/0.6.0/frappe-gantt.css">
+</head>
+
+<body>
+    <div class="container mx-auto max-w-4xl">
+        <div class="navbar bg-base-100">
+            <div class="navbar-start">
+                <a class="btn btn-ghost normal-case text-xl" href="/">Gantt Viewer</a>
+            </div>
+            <div class="navbar-end">
+                {{if .User}}
+                <div class="dropdown dropdown-hover">
+                    <label tabindex="0" class="btn"><i class="fab fa-github mr-2"></i> {{.User.GitHubLogin}}</label>
+                    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                        <li><a href="/dashboard">Dashboard</a></li>
+                        <li><button onclick="logout()">Logout</button></li>
+                    </ul>
+                </div>
+                {{else}}
+                <a class="btn" href="/oauth2/login"><i class="fab fa-github mr-2"></i> Login</a>
+                {{end}}
+            </div>
+        </div>
+    </div>
