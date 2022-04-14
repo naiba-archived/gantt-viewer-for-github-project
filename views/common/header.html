@@ -19,9 +19,9 @@
                 <a class="btn btn-ghost normal-case text-xl" href="/">Gantt Viewer</a>
             </div>
             <div class="navbar-end">
-                {{if .User}}
+                {{if .Site.User}}
                 <div class="dropdown dropdown-hover">
-                    <label tabindex="0" class="btn"><i class="fab fa-github mr-2"></i> {{.User.GitHubLogin}}</label>
+                    <label tabindex="0" class="btn"><i class="fab fa-github mr-2"></i> {{.Site.User.GitHubLogin}}</label>
                     <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
                         <li><a href="/dashboard">Dashboard</a></li>
                         <li><button onclick="logout()">Logout</button></li>

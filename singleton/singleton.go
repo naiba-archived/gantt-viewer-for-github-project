@@ -83,10 +83,12 @@ func GetOauth2Config() *oauth2.Config {
 	return oauth2config
 }
 
-func Map(data fiber.Map) fiber.Map {
+func Map(c *fiber.Ctx, data fiber.Map) fiber.Map {
+	user := c.Locals(model.KeyAuthorizedUser)
 	data["Site"] = fiber.Map{
 		"Title": "Gantt Viewer for GitHub Project",
 		"Brand": "Gantt Viewer",
+		"User":  user,
 	}
 	return data
 }

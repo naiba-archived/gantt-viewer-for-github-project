@@ -1,0 +1,15 @@
+{{template "common/header" .}}
+<div class="container mx-auto max-w-4xl">
+    <p class="text-4xl text-center font-extrabold"><span class="border-b-4 border-green-400">{{.Title}}</span> <span
+            class="badge">@{{.Owner}}</span></p>
+</div>
+<div class="mt-8">
+    <svg id="project"></svg>
+</div>
+{{template "common/footer" .}}
+<script>
+    (function () {
+        const tasks = JSON.parse('{{.Gantts|json}}');
+        new Gantt("#project", tasks)
+    })()
+</script>

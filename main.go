@@ -1,10 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-	"strings"
 	"sync"
 	"time"
 
@@ -16,12 +15,18 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/naiba/gantt-viewer-for-github-project/model"
+	"github.com/naiba/gantt-viewer-for-github-project/router"
 	"github.com/naiba/gantt-viewer-for-github-project/singleton"
 	"github.com/naiba/gantt-viewer-for-github-project/util"
 )
 
 func main() {
 	engine := html.New("./views", ".html")
+	engine.AddFunc("json", func(x interface{}) string {
+		data, _ := json.Marshal(x)
+		return string(data)
+	})
+
 	engine.Reload(true)
 	engine.Debug(true)
 
@@ -33,21 +38,27 @@ func main() {
 	app.Use(recover.New())
 	app.Static("/static", "./static")
 
-	app.Get("/", userAuthorize, func(c *fiber.Ctx) error {
-		user := c.Locals(model.KeyAuthorizedUser)
-		return c.Render("index", singleton.Map(fiber.Map{
-			"User": user,
-		}))
+	app.Get("/", router.UserAuthorize, func(c *fiber.Ctx) error {
+		return c.Render("index", singleton.Map(c, fiber.Map{}))
 	})
 
-	app.Get("/:type/:user/projects/:id/views/:vid", redirectToMainProjectPage)
-	app.Get("/:type/:user/projects/:id/", func(c *fiber.Ctx) error {
-		// TODO 加载 projects 中的内容
-		return c.SendString("bingo")
+	app.Get("/:type/:users/projects/:id/views/:vid", router.RedirectToMainProjectPage)
+	app.Get("/:type/:users/projects/:id/", router.UserAuthorize, router.LoginRequired, func(c *fiber.Ctx) error {
+		id, err := c.ParamsInt("id")
+		if err != nil {
+			return err
+		}
+		if c.Params("type") == "orgs" {
+			return router.ProjectHome[model.QueryOrganizationProjectNext](c, c.Params("users"), id)
+		}
+		if c.Params("type") == "users" {
+			return router.ProjectHome[model.QueryUserProjectNext](c, c.Params("users"), id)
+		}
+		return errors.New("Invalid type")
 	})
 
 	{
-		app.Get("/dashboard", userAuthorize, loginRequired, func(c *fiber.Ctx) error {
+		app.Get("/dashboard", router.UserAuthorize, router.LoginRequired, func(c *fiber.Ctx) error {
 			user := c.Locals(model.KeyAuthorizedUser).(*model.User)
 			token, err := user.GetGitHubToken()
 			if err != nil {
@@ -66,21 +77,29 @@ func main() {
 			var repositoriesProjects model.QueryRepositoriesProjectsNext
 			var viewerProjectsNext model.QueryViewerProjectsNext
 
+			projectLoadVariables := map[string]interface {
+			}{
+				"projectFieldFirst":       githubv4.Int(100),
+				"projectFieldValuesFirst": githubv4.Int(0),
+				"projectItemsFirst":       githubv4.Int(0),
+				"projectItemsAfter":       (*githubv4.String)(nil),
+			}
+
 			go func() {
 				defer wg.Done()
-				if err := client.Query(c.Context(), &organizationProjects, nil); err != nil {
+				if err := client.Query(c.Context(), &organizationProjects, projectLoadVariables); err != nil {
 					errMix = err
 				}
 			}()
 			go func() {
 				defer wg.Done()
-				if err := client.Query(c.Context(), &repositoriesProjects, nil); err != nil {
+				if err := client.Query(c.Context(), &repositoriesProjects, projectLoadVariables); err != nil {
 					errMix = err
 				}
 			}()
 			go func() {
 				defer wg.Done()
-				if err := client.Query(c.Context(), &viewerProjectsNext, nil); err != nil {
+				if err := client.Query(c.Context(), &viewerProjectsNext, projectLoadVariables); err != nil {
 					errMix = err
 				}
 			}()
@@ -99,15 +118,12 @@ func main() {
 				projects = append(projects, v.ProjectsNext.ToProjects()...)
 			}
 
-			log.Printf("%+v", viewerProjectsNext)
-
-			return c.Render("dashboard", singleton.Map(fiber.Map{
-				"User":     user,
+			return c.Render("dashboard", singleton.Map(c, fiber.Map{
 				"Projects": projects,
 			}))
 		})
 
-		app.Post("/logout", userAuthorize, loginRequired, func(c *fiber.Ctx) error {
+		app.Post("/logout", router.UserAuthorize, router.LoginRequired, func(c *fiber.Ctx) error {
 			user := c.Locals(model.KeyAuthorizedUser).(*model.User)
 			sid, err := util.GenerateSid(string(user.GitHubLogin))
 			if err != nil {
@@ -124,13 +140,13 @@ func main() {
 				Secure:   false,
 				HTTPOnly: false,
 			})
-			return c.Render("redirect", singleton.Map(fiber.Map{
+			return c.Render("redirect", singleton.Map(c, fiber.Map{
 				"URL": "/",
 			}))
 		})
 	}
 
-	oauth2group := app.Group("/oauth2").Use(userAuthorize).Use(anonymousRequired)
+	oauth2group := app.Group("/oauth2").Use(router.UserAuthorize).Use(router.AnonymousRequired)
 	{
 		oauth2group.Get("/login", func(c *fiber.Ctx) error {
 			state, err := util.GenerateRandomString(16)
@@ -146,7 +162,7 @@ func main() {
 			})
 
 			singleton.Cache.Set(fmt.Sprintf("os::%s", c.IP()), state, cache.DefaultExpiration)
-			return c.Render("redirect", singleton.Map(fiber.Map{
+			return c.Render("redirect", singleton.Map(c, fiber.Map{
 				"URL": singleton.GetOauth2Config().AuthCodeURL(state, oauth2.AccessTypeOnline),
 			}))
 		})
@@ -198,43 +214,11 @@ func main() {
 				Secure:   false,
 				HTTPOnly: false,
 			})
-			return c.Render("redirect", singleton.Map(fiber.Map{
+			return c.Render("redirect", singleton.Map(c, fiber.Map{
 				"URL": "/",
 			}))
 		})
 	}
 
 	app.Listen(":80")
-}
-
-func userAuthorize(c *fiber.Ctx) error {
-	sid := strings.TrimSpace(c.Cookies(model.KeyAuthCookie))
-	if sid != "" {
-		var user model.User
-		if err := singleton.GetDB().Where("sid = ?", sid).First(&user).Error; err != nil {
-			return err
-		}
-		c.Locals(model.KeyAuthorizedUser, &user)
-	}
-	return c.Next()
-}
-
-func loginRequired(c *fiber.Ctx) error {
-	user := c.Locals(model.KeyAuthorizedUser)
-	if user == nil {
-		return errors.New("Login required")
-	}
-	return c.Next()
-}
-
-func anonymousRequired(c *fiber.Ctx) error {
-	user := c.Locals(model.KeyAuthorizedUser)
-	if user != nil {
-		return errors.New("Already login")
-	}
-	return c.Next()
-}
-
-func redirectToMainProjectPage(c *fiber.Ctx) error {
-	return c.Redirect("/" + c.Params("type") + "/" + c.Params("user") + "/projects/" + c.Params("id"))
 }
