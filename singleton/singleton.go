@@ -43,6 +43,9 @@ func setupDB() {
 		panic(fmt.Sprintf("failed to connect database %+v", err))
 	}
 	db.AutoMigrate(&model.User{})
+	if GetConfig().Debug {
+		db = db.Debug()
+	}
 }
 
 func GetDB() *gorm.DB {

@@ -27,8 +27,10 @@ func main() {
 		return string(data)
 	})
 
-	engine.Reload(true)
-	engine.Debug(true)
+	if singleton.GetConfig().Debug {
+		engine.Reload(true)
+		engine.Debug(true)
+	}
 
 	app := fiber.New(
 		fiber.Config{

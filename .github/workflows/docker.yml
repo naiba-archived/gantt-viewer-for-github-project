@@ -1,0 +1,17 @@
+name: Build Docker Image
+
+on: [push]
+
+jobs:
+  build-step:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Log into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: docker build & push
+        run: |
+          docker build -t ghcr.io/${{ github.actor }}/trojan-panel -f cmd/dashboard/Dockerfile .
+          docker push ghcr.io/${{ github.repository_owner }}/gantt-for-gp
