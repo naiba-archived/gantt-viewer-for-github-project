@@ -1,4 +1,14 @@
 (function () {
+    const changeThemeSelect = document.getElementById('change-theme');
+    const themes = ["auto", "light", "dark", "cupcake", "bumblebee", "emerald", "corporate", "synthwave", "retro", "cyberpunk", "valentine", "halloween", "garden", "forest", "aqua", "lofi", "pastel", "fantasy", "wireframe", "black", "luxury", "dracula", "cmyk", "autumn", "business", "acid", "lemonade", "night", "coffee", "winter"]
+    themes.forEach(t => {
+        changeThemeSelect.innerHTML += `<option value="${t}" ${t == Cookies.get('theme') ? 'selected' : ''}>${t}</option>`
+    })
+    changeThemeSelect.addEventListener('change', e => {
+        Cookies.set('theme', e.target.value)
+        window.location.reload()
+    })
+
     const tasks = [
         {
             id: 'Task 1',

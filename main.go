@@ -17,7 +17,6 @@ import (
 	"github.com/naiba/gantt-viewer-for-github-project/model"
 	"github.com/naiba/gantt-viewer-for-github-project/router"
 	"github.com/naiba/gantt-viewer-for-github-project/singleton"
-	"github.com/naiba/gantt-viewer-for-github-project/util"
 )
 
 func main() {
@@ -127,7 +126,7 @@ func main() {
 
 		app.Post("/logout", router.UserAuthorize, router.LoginRequired, func(c *fiber.Ctx) error {
 			user := c.Locals(model.KeyAuthorizedUser).(*model.User)
-			sid, err := util.GenerateSid(string(user.GitHubLogin))
+			sid, err := singleton.GenerateSid(string(user.GitHubLogin))
 			if err != nil {
 				return err
 			}
@@ -151,7 +150,7 @@ func main() {
 	oauth2group := app.Group("/oauth2").Use(router.UserAuthorize).Use(router.AnonymousRequired)
 	{
 		oauth2group.Get("/login", func(c *fiber.Ctx) error {
-			state, err := util.GenerateRandomString(16)
+			state, err := singleton.GenerateRandomString(16)
 			if err != nil {
 				return err
 			}
@@ -198,7 +197,7 @@ func main() {
 				return err
 			}
 
-			sid, err := util.GenerateSid(string(viewer.Viewer.Login))
+			sid, err := singleton.GenerateSid(string(viewer.Viewer.Login))
 			if err != nil {
 				return err
 			}
