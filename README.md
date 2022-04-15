@@ -2,88 +2,14 @@
 
 Gantt Viewer for Github Project
 
-## TODO
+[![LGWf10.png](https://s1.ax1x.com/2022/04/15/LGWf10.png)](https://imgtu.com/i/LGWf10)
 
-### Graphql API
+## Example config file
 
-
-```graphql
-query MyQuery {
-  organization(login: "bitizenwallet") {
-    projectsNext(first: 10) {
-      pageInfo {
-        hasNextPage
-      }
-      edges {
-        node {
-          owner {
-            id
-          }
-          public
-          title
-          viewerCanUpdate
-        }
-      }
-      nodes {
-        title
-        updatedAt
-        items(first: 10) {
-          pageInfo {
-            hasNextPage
-          }
-          nodes {
-            title
-            fieldValues(first: 10) {
-              pageInfo {
-                hasNextPage
-              }
-              nodes {
-                value
-                updatedAt
-                projectField {
-                  name
-                  dataType
-                }
-              }
-            }
-            type
-            id
-            isArchived
-            content {
-              ... on Issue {
-                id
-                assignees(first: 10) {
-                  pageInfo {
-                    hasNextPage
-                  }
-                  nodes {
-                    name
-                    avatarUrl
-                  }
-                }
-                url
-              }
-              ... on DraftIssue {
-                id
-                assignees(first: 10) {
-                  pageInfo {
-                    hasNextPage
-                  }
-                  nodes {
-                    name
-                    avatarUrl
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+```json
+{
+    "Debug": true,
+    "GitHubOauthClientID": "xxxxxxxxxx",
+    "GitHubOauthClientSecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }
 ```
-
-### Gantt render
-
-https://github.com/frappe/gantt

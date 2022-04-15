@@ -38,7 +38,31 @@
 <script>
     (function () {
         const tasks = JSON.parse('{{.Gantts|json}}');
-        const gantt = new Gantt("#project", tasks);
+        const gantt = new Gantt("#project", tasks, {
+            custom_popup_html: function (task) {
+                let date = ''
+                if (task.start) {
+                    date = `<p>${task.start}`
+                }
+                if (task.end) {
+                    date += ` - ${task.end}</p>`
+                }
+                let assignees = ''
+                task.assignees.forEach((a, i) => {
+                    assignees += `<div class="avatar inline-block ${i == 0 ? 'mx-1' : 'ml-1'} mt-1">
+  <div class="w-8 rounded-full">
+    <img title="${a.login}" src="${a.avatar_url}" />
+  </div>`
+                })
+                return `
+                        <div class="details-container p-3" >
+            	  <p>${task.name} <a class="text-base-content" href="${task.issue_url}" target="_blank">Open</a></p>
+            	  <p>${task.progress ?? 0}% completed!</p>
+                  ${date}
+                    <p>${assignees}</p>
+            	</div >
+            `},
+        });
         const viewModeButtons = Array.prototype.slice.call(document.getElementById("gantt-view-mode").querySelectorAll("button"))
         const ganttFilterByMilestoneButton = document.getElementById("gantt-filter-milestone");
         const ganttFilterByAssigneeButton = document.getElementById("gantt-filter-assignee");
@@ -49,7 +73,7 @@
             }
             if (task.assignees) {
                 task.assignees.forEach(assignee => {
-                    ganttFilterByAssigneeButton.innerHTML += `<option>${assignee.login}</option>`
+                    ganttFilterByAssigneeButton.innerHTML += `<option option > ${assignee.login}</option >`
                 })
             }
         })

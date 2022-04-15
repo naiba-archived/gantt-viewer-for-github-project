@@ -115,10 +115,12 @@ func (pi GitHubProjectNextItem) ToGantts() []Gantt {
 		if pi.Nodes[i].Content.Issue.Url != "" {
 			matches := getGitHubIssueMatch.FindStringSubmatch(string(pi.Nodes[i].Content.Issue.Url))
 			gantt.Id = fmt.Sprintf("%s/%s#%s", matches[1], matches[2], matches[3])
+			gantt.IssueUrl = string(pi.Nodes[i].Content.Issue.Url)
 		}
 		if gantt.Id == "" && pi.Nodes[i].Content.PullRequest.Url != "" {
 			matches := getGitHubIssueMatch.FindStringSubmatch(string(pi.Nodes[i].Content.PullRequest.Url))
 			gantt.Id = fmt.Sprintf("%s/%s#%s", matches[1], matches[2], matches[3])
+			gantt.IssueUrl = string(pi.Nodes[i].Content.PullRequest.Url)
 		}
 		for j := 0; j < len(pi.Nodes[i].Content.Issue.Assignees.Nodes); j++ {
 			assignee := pi.Nodes[i].Content.Issue.Assignees.Nodes[j]

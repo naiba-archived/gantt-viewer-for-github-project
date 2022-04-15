@@ -2,6 +2,7 @@ package model
 
 type Gantt struct {
 	Id           string `json:"id,omitempty"`
+	IssueUrl     string `json:"issue_url,omitempty"`
 	Name         string `json:"name,omitempty"`
 	Start        string `json:"start,omitempty"`
 	End          string `json:"end,omitempty"`
