@@ -4,7 +4,7 @@ RUN apk --no-cache --no-progress add \
 WORKDIR /gantt
 COPY . .
 RUN GIT_COMMIT=$(git rev-list -1 HEAD) && \
-    go build -o app -ldflags="-s -w -X github.com/naiba/github.com/naiba/gantt-viewer-for-github-project/singleton.Version=${GIT_COMMIT:0:7}"
+    go build -o app -ldflags="-s -w -X github.com/naiba/gantt-viewer-for-github-project/singleton.Version=${GIT_COMMIT:0:7}"
 
 FROM alpine:latest
 ENV TZ="Asia/Shanghai"
