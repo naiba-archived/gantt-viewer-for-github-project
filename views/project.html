@@ -1,15 +1,75 @@
 {{template "common/header" .}}
-<div class="container mx-auto max-w-4xl">
-    <p class="text-4xl text-center font-extrabold"><span class="border-b-4 border-green-400">{{.Title}}</span> <span
-            class="badge">@{{.Owner}}</span></p>
-</div>
-<div class="mt-8">
-    <svg id="project"></svg>
+<div class="main bg-base-200">
+    <div class="container mx-auto max-w-4xl pt-7">
+        <p class="text-4xl text-center font-extrabold"><a href="{{.URL}}" target="_blank"
+                class="border-b-4 border-green-400">{{.Title}}</a> <a href="https://github.com/{{.Owner}}"
+                target="_blank" class="badge">@{{.Owner}}</a></p>
+    </div>
+    <div class="mt-8">
+        <svg id="project"></svg>
+    </div>
+    <div class="mx-auto max-w-4xl mt-8">
+        <div class="text-xl font-extrabold text-center">
+            <p class="inline-block">Filter by milestone: <select class="select select-bordered ml-2"
+                    id="gantt-filter-milestone">
+                    <option value="">Unset</option>
+                </select></p>
+            <p class="inline-block ml-4">Filter by assignee: <select class="select select-bordered ml-2"
+                    id="gantt-filter-assignee">
+                    <option value="">Unset</option>
+                </select></p>
+            <div class="mt-4">
+                Change View Mode:
+                <div class="btn-group inline-block ml-2" id="gantt-view-mode">
+                    <button class="btn btn-md">Quarter Day</button>
+                    <button class="btn btn-md">Half Day</button>
+                    <button class="btn btn-md btn-active">Day</button>
+                    <button class="btn btn-md">Week</button>
+                    <button class="btn btn-md">Month</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p class="text-center py-8 text-xl font-extrabold italic underline">
+        <a href="{{.URL}}" target="_blank">View on GitHub</a>
+    </p>
 </div>
 {{template "common/footer" .}}
 <script>
     (function () {
         const tasks = JSON.parse('{{.Gantts|json}}');
-        new Gantt("#project", tasks)
+        const gantt = new Gantt("#project", tasks);
+        const viewModeButtons = Array.prototype.slice.call(document.getElementById("gantt-view-mode").querySelectorAll("button"))
+        const ganttFilterByMilestoneButton = document.getElementById("gantt-filter-milestone");
+        const ganttFilterByAssigneeButton = document.getElementById("gantt-filter-assignee");
+
+        tasks.forEach(task => {
+            if (task.milestone) {
+                ganttFilterByMilestoneButton.innerHTML += '<option>' + task.milestone + '</option>'
+            }
+            if (task.assignees) {
+                task.assignees.forEach(assignee => {
+                    ganttFilterByAssigneeButton.innerHTML += `<option>${assignee.login}</option>`
+                })
+            }
+        })
+
+        viewModeButtons.forEach(btn => {
+            btn.addEventListener('click', (ev) => {
+                viewModeButtons.forEach((button) => {
+                    button.classList.remove("btn-active")
+                })
+                ev.target.classList.add("btn-active")
+                gantt.change_view_mode(ev.target.innerHTML)
+            })
+        })
+
+        ganttFilterByMilestoneButton.addEventListener('change', (ev) => {
+            gantt.refresh(tasks.filter(task => !ev.target.value || task.milestone === ev.target.value))
+        })
+
+        ganttFilterByAssigneeButton.addEventListener('change', (ev) => {
+            gantt.refresh(tasks.filter(task => !ev.target.value || task.assignees.some(assignee => assignee.login === ev.target.value)))
+        })
     })()
 </script>

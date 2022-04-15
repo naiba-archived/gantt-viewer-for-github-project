@@ -50,6 +50,9 @@ type GitHubIssueLikeAssignees struct {
 
 type GitHubIssueLikeItem struct {
 	Url       githubv4.String
+	Milestone struct {
+		Title githubv4.String
+	}
 	Assignees GitHubIssueLikeAssignees `graphql:"assignees(first: 100)"`
 }
 
@@ -87,8 +90,8 @@ type GitHubProjectNextItem struct {
 			}
 		} `graphql:"fieldValues(first: $projectFieldValuesFirst)"`
 		Content struct {
-			Issue       GitHubIssueLikeItem `graphql:"... on Issue"`
 			DraftIssue  GitHubDraftIssue    `graphql:"... on DraftIssue"`
+			Issue       GitHubIssueLikeItem `graphql:"... on Issue"`
 			PullRequest GitHubIssueLikeItem `graphql:"... on PullRequest"`
 		}
 	}
@@ -104,6 +107,11 @@ func (pi GitHubProjectNextItem) ToGantts() []Gantt {
 	var gantts []Gantt
 	for i := 0; i < len(pi.Nodes); i++ {
 		var gantt Gantt
+		if pi.Nodes[i].Content.Issue.Milestone.Title != "" {
+			gantt.Milestone = string(pi.Nodes[i].Content.Issue.Milestone.Title)
+		} else if pi.Nodes[i].Content.PullRequest.Milestone.Title != "" {
+			gantt.Milestone = string(pi.Nodes[i].Content.PullRequest.Milestone.Title)
+		}
 		if pi.Nodes[i].Content.Issue.Url != "" {
 			matches := getGitHubIssueMatch.FindStringSubmatch(string(pi.Nodes[i].Content.Issue.Url))
 			gantt.Id = fmt.Sprintf("%s/%s#%s", matches[1], matches[2], matches[3])
@@ -153,7 +161,7 @@ type QueryOrganizationProjectsNext struct {
 	Viewer struct {
 		Organizations struct {
 			Nodes []struct {
-				ProjectsNext GitHubProjectsNext `graphql:"projectsNext(first: 100)"`
+				ProjectsNext GitHubProjectsNext `graphql:"projectsNext(first: 100, query: \"status:open\")"`
 				Login        githubv4.String
 			}
 		} `graphql:"organizations(first: 40)"`
@@ -164,7 +172,7 @@ type QueryRepositoriesProjectsNext struct {
 	Viewer struct {
 		Repositories struct {
 			Nodes []struct {
-				ProjectsNext GitHubProjectsNext `graphql:"projectsNext(first: 100)"`
+				ProjectsNext GitHubProjectsNext `graphql:"projectsNext(first: 100, query: \"status:open\")"`
 			}
 		} `graphql:"repositories(first: 40)"`
 	}
@@ -172,7 +180,7 @@ type QueryRepositoriesProjectsNext struct {
 
 type QueryViewerProjectsNext struct {
 	Viewer struct {
-		ProjectsNext GitHubProjectsNext `graphql:"projectsNext(first: 100)"`
+		ProjectsNext GitHubProjectsNext `graphql:"projectsNext(first: 100, query: \"status:open\")"`
 	}
 }
 
