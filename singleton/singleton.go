@@ -94,7 +94,7 @@ func Map(c *fiber.Ctx, data fiber.Map) fiber.Map {
 	user := c.Locals(model.KeyAuthorizedUser)
 	theme := c.Cookies("theme")
 	if theme == "" {
-		theme = "aqua"
+		theme = "wireframe"
 	}
 	data["Site"] = fiber.Map{
 		"Title":   "Gantt Viewer for GitHub Project",
