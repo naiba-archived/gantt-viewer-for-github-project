@@ -67,13 +67,21 @@
         const ganttFilterByMilestoneButton = document.getElementById("gantt-filter-milestone");
         const ganttFilterByAssigneeButton = document.getElementById("gantt-filter-assignee");
 
+        const uniqueMilestone = {}
+        const uniqueAssignee = {}
         tasks.forEach(task => {
             if (task.milestone) {
-                ganttFilterByMilestoneButton.innerHTML += '<option>' + task.milestone + '</option>'
+                if (!uniqueMilestone[task.milestone.title]) {
+                    uniqueMilestone[task.milestone.title] = true
+                    ganttFilterByMilestoneButton.innerHTML += `<option>${task.milestone}</option>`
+                }
             }
             if (task.assignees) {
                 task.assignees.forEach(assignee => {
-                    ganttFilterByAssigneeButton.innerHTML += `<option option > ${assignee.login}</option >`
+                    if (!uniqueAssignee[assignee.login]) {
+                        uniqueAssignee[assignee.login] = true
+                        ganttFilterByAssigneeButton.innerHTML += `<option>${assignee.login}</option>`
+                    }
                 })
             }
         })
@@ -88,12 +96,22 @@
             })
         })
 
+        let filterMilestone = null
+        let filterAssignee = null
+
+        const filter = () => {
+            console.log('filter', filterMilestone, filterAssignee)
+            gantt.refresh(tasks.filter(task => (!filterMilestone || task.milestone === filterMilestone) && (!filterAssignee || task.assignees?.some(assignee => assignee.login === filterAssignee))))
+        }
+
         ganttFilterByMilestoneButton.addEventListener('change', (ev) => {
-            gantt.refresh(tasks.filter(task => !ev.target.value || task.milestone === ev.target.value))
+            filterMilestone = ev.target.value;
+            filter()
         })
 
         ganttFilterByAssigneeButton.addEventListener('change', (ev) => {
-            gantt.refresh(tasks.filter(task => !ev.target.value || task.assignees.some(assignee => assignee.login === ev.target.value)))
+            filterAssignee = ev.target.value;
+            filter()
         })
     })()
 </script>
