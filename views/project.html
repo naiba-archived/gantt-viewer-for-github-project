@@ -71,8 +71,8 @@
         const uniqueAssignee = {}
         tasks.forEach(task => {
             if (task.milestone) {
-                if (!uniqueMilestone[task.milestone.title]) {
-                    uniqueMilestone[task.milestone.title] = true
+                if (!uniqueMilestone[task.milestone]) {
+                    uniqueMilestone[task.milestone] = true
                     ganttFilterByMilestoneButton.innerHTML += `<option>${task.milestone}</option>`
                 }
             }
@@ -100,8 +100,12 @@
         let filterAssignee = null
 
         const filter = () => {
-            console.log('filter', filterMilestone, filterAssignee)
-            gantt.refresh(tasks.filter(task => (!filterMilestone || task.milestone === filterMilestone) && (!filterAssignee || task.assignees?.some(assignee => assignee.login === filterAssignee))))
+            const newTasks = tasks.filter(task => (!filterMilestone || task.milestone === filterMilestone) && (!filterAssignee || task.assignees?.some(assignee => assignee.login === filterAssignee)))
+            if (newTasks.length) {
+                gantt.refresh(newTasks)
+            } else {
+                gantt.clear()
+            }
         }
 
         ganttFilterByMilestoneButton.addEventListener('change', (ev) => {
