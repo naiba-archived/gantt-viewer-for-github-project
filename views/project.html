@@ -56,7 +56,7 @@
                 })
                 return `
                         <div class="details-container p-3" >
-            	  <p>${task.name} <a class="text-base-content" href="${task.issue_url}" target="_blank">Open</a></p>
+            	  <p><a class="text-base-100" href="${task.issue_url}" target="_blank">${task.name}</a></p>
             	  <p>${task.progress ?? 0}% completed!</p>
                   ${date}
                     <p>${assignees}</p>
