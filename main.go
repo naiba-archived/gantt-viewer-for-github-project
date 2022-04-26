@@ -150,27 +150,27 @@ func main() {
 	oauth2group := app.Group("/oauth2").Use(router.UserAuthorize).Use(router.AnonymousRequired)
 	{
 		oauth2group.Get("/login", func(c *fiber.Ctx) error {
-			state, err := singleton.GenerateRandomString(16)
+			randomString, err := singleton.GenerateRandomString(32)
 			if err != nil {
 				return err
 			}
+			state, stateKey := randomString[:16], randomString[16:]
 			c.Cookie(&fiber.Cookie{
 				Name:     "oa_state",
-				Value:    state,
+				Value:    stateKey,
 				Expires:  time.Now().Add(time.Second * 60 * 10),
 				Secure:   false,
 				HTTPOnly: false,
 			})
 
-			singleton.Cache.Set(fmt.Sprintf("os::%s", c.IP()), state, cache.DefaultExpiration)
+			singleton.Cache.Set(fmt.Sprintf("os::%s", stateKey), state, cache.DefaultExpiration)
 			return c.Render("redirect", singleton.Map(c, fiber.Map{
 				"URL": singleton.GetOauth2Config().AuthCodeURL(state, oauth2.AccessTypeOnline),
 			}))
 		})
 		oauth2group.Get("/callback", func(c *fiber.Ctx) error {
-			state, ok := singleton.Cache.Get(fmt.Sprintf("os::%s", c.IP()))
-			stateFromCookie := c.Cookies("oa_state")
-			if !ok || state.(string) != c.Query("state") || state.(string) != stateFromCookie {
+			state, ok := singleton.Cache.Get(fmt.Sprintf("os::%s", c.Cookies("oa_state")))
+			if !ok || state.(string) != c.Query("state") || state.(string) != state {
 				return errors.New("Invalid login state")
 			}
 			token, err := singleton.GetOauth2Config().Exchange(c.Context(), c.Query("code"))
