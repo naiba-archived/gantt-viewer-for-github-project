@@ -5,9 +5,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/big"
+	"os"
 	"sync"
 	"time"
 
@@ -59,7 +59,7 @@ func GetDB() *gorm.DB {
 
 func readConfig() {
 	log.Println("reading config...")
-	content, err := ioutil.ReadFile("data/config.json")
+	content, err := os.ReadFile("data/config.json")
 	if err != nil {
 		panic(fmt.Sprintf("failed to read config file %+v", err))
 	}

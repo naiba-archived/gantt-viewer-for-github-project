@@ -25,7 +25,7 @@ func UserAuthorize(c *fiber.Ctx) error {
 func LoginRequired(c *fiber.Ctx) error {
 	user := c.Locals(model.KeyAuthorizedUser)
 	if user == nil {
-		return errors.New("Login required")
+		return errors.New("login required")
 	}
 	return c.Next()
 }
@@ -33,7 +33,7 @@ func LoginRequired(c *fiber.Ctx) error {
 func AnonymousRequired(c *fiber.Ctx) error {
 	user := c.Locals(model.KeyAuthorizedUser)
 	if user != nil {
-		return errors.New("Already login")
+		return errors.New("already login")
 	}
 	return c.Next()
 }

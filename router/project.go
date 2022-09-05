@@ -45,7 +45,6 @@ func ProjectHome[T model.GetGitHubProjectExt](c *fiber.Ctx, owner string, number
 		projectUrl = string(q.GetProjectNext().Url)
 		for q.GetProjectNext().Items.PageInfo.HasNextPage {
 			projectLoadVariables["projectItemsAfter"] = q.GetProjectNext().Items.PageInfo.EndCursor
-			var q T
 			if err := client.Query(c.Context(), &q, projectLoadVariables); err != nil {
 				return err
 			}
