@@ -23,7 +23,7 @@ type QueryLoginUser struct {
 func (u QueryLoginUser) GetId() (uint, error) {
 	matches := matchExactId.FindAllStringSubmatch(string(u.Viewer.AvatarUrl), -1)
 	if len(matches[0]) != 2 {
-		return 0, errors.New("Invalid avatar url")
+		return 0, errors.New("invalid avatar url")
 	}
 	id, err := strconv.ParseUint(matches[0][1], 10, 64)
 	if err != nil {

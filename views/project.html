@@ -5,9 +5,6 @@
                 class="border-b-4 border-green-400">{{.Title}}</a> <a href="https://github.com/{{.Owner}}"
                 target="_blank" class="badge">@{{.Owner}}</a></p>
     </div>
-    <div class="mt-8">
-        <svg id="project"></svg>
-    </div>
     <div class="mx-auto max-w-4xl mt-8">
         <div class="text-xl font-extrabold text-center">
             <p class="inline-block">Filter by milestone: <select class="select select-bordered ml-2"
@@ -29,6 +26,9 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="mt-8">
+        <svg id="project"></svg>
     </div>
     <p class="text-center py-8 text-xl font-extrabold italic underline">
         <a href="{{.URL}}" target="_blank">View on GitHub</a>
